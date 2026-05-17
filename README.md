@@ -225,3 +225,112 @@ Garante que:
 - Domínio (`[^@.]+`): ao menos 1 caractere
 - `.` literal
 - TLD (`[^@.]+`): ao menos 1 caractere
+
+
+---
+---
+---
+
+# Exercício TDD — Calculadora de Salário de Funcionários
+
+Implementação em **Java 21 + JUnit 5** do Exercício 3 de TDD.  
+A classe `CalculaSalario` calcula o salário líquido de um `Funcionario`
+aplicando descontos variáveis por cargo e faixa salarial.
+
+
+---
+
+
+## Build & Testes
+
+```bash
+# Clone o repositório
+git clone <URL_DO_REPOSITORIO>
+cd Ex3-Calculadora
+
+# Compilar, rodar testes e gerar relatório JaCoCo
+mvn test
+```
+---
+
+## Regras de Negócio
+
+| Cargo         | Salário base        | Desconto |
+|---------------|---------------------|----------|
+| DESENVOLVEDOR | &ge; R$ 3.000,00    | 20 %     |
+| DESENVOLVEDOR | &lt; R$ 3.000,00    | 10 %     |
+| DBA           | &ge; R$ 2.000,00    | 25 %     |
+| DBA           | &lt; R$ 2.000,00    | 15 %     |
+| TESTADOR      | &ge; R$ 2.000,00    | 25 %     |
+| TESTADOR      | &lt; R$ 2.000,00    | 15 %     |
+| GERENTE       | &ge; R$ 5.000,00    | 30 %     |
+| GERENTE       | &lt; R$ 5.000,00    | 20 %     |
+
+---
+
+## Evidências de Cobertura (JaCoCo)
+
+```
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running service.SalarioCalculatorTest
+
+SalarioCalculator — calcularSalarioLiquido()
+
+  DESENVOLVEDOR | limite R$ 3.000,00 | abaixo=10% / acima=20%
+    ✓ 1: salario 2.999,99 (abaixo do limite) → desconto 10%  [2699,99]
+    ✓ 2: salario 3.000,00 (exato no limite)  → desconto 20%  [2400,00]
+    ✓ 3: salario 5.000,00 (acima do limite)  → desconto 20%  [4000,00]
+    ✓ 4: salario 1.500,00 (bem abaixo)       → desconto 10%  [1350,00]
+
+  DBA | limite R$ 2.000,00 | abaixo=15% / acima=25%
+    ✓ 5: salario 1.999,99 (abaixo do limite) → desconto 15%  [1699,99]
+    ✓ 6: salario 2.000,00 (exato no limite)  → desconto 25%  [1500,00]
+    ✓ 7: salario 4.000,00 (acima do limite)  → desconto 25%  [3000,00]
+    ✓ 8: salario 800,00   (bem abaixo)       → desconto 15%  [ 680,00]
+
+  TESTADOR | limite R$ 2.000,00 | abaixo=15% / acima=25%
+    ✓ 9: salario 1.999,99 (abaixo do limite) → desconto 15%  [1699,99]
+    ✓ 10: salario 2.000,00 (exato no limite)  → desconto 25%  [1500,00]
+    ✓ 11: salario 3.500,00 (acima do limite)  → desconto 25%  [2625,00]
+    ✓ 12: salario 1.000,00 (bem abaixo)       → desconto 15%  [ 850,00]
+
+  GERENTE | limite R$ 5.000,00 | abaixo=20% / acima=30%
+    ✓ 13: salario 4.999,99 (abaixo do limite) → desconto 20%  [3999,99]
+    ✓ 14: salario 5.000,00 (exato no limite)  → desconto 30%  [3500,00]
+    ✓ 15: salario 8.000,00 (acima do limite)  → desconto 30%  [5600,00]
+    ✓ 16: salario 2.000,00 (bem abaixo)       → desconto 20%  [1600,00]
+
+  17 | Verificacao dos valores absolutos
+    ✓ 17a: DESENVOLVEDOR  3.000,00 → R$ 2.400,00
+    ✓ 17b: DBA            2.000,00 → R$ 1.500,00
+    ✓ 17c: TESTADOR       2.000,00 → R$ 1.500,00
+    ✓ 17d: GERENTE        5.000,00 → R$ 3.500,00
+    ✓ 17e: DESENVOLVEDOR  1.000,00 → R$   900,00
+    ✓ 17f: GERENTE       10.000,00 → R$ 7.000,00
+
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+```
+
+### Cobertura JaCoCo — `SalarioCalculator.java`
+
+| Elemento                  | Instruções | Branches | Linhas |
+|---------------------------|-----------|----------|--------|
+| `calcularSalarioLiquido`  | 100 %     | 100 %    | 100 %  |
+| `resolverDesconto`        | 100 %     | 100 %    | 100 %  |
+
+---
+
+## Estratégia de Testes (Boundary Value Analysis)
+
+Para cada cargo foram criados **4 CTs** cobrindo:
+
+```
+  [valor bem abaixo]  [limite - 0,01]  |  [exato no limite]  [valor bem acima]
+         desconto menor (faixa 1)      |       desconto maior (faixa 2)
+```
+
+O grupo **17** valida os valores monetários absolutos (não apenas o percentual),
+garantindo que a fórmula `base - (base × desconto)` está correta em todos os cargos.
