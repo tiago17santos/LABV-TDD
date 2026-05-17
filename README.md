@@ -113,3 +113,115 @@ Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
 4. Se a=b ou b=c ou a=c        →  ISOSCELES
 5. Caso contrário              →  ESCALENO
 ```
+
+---
+---
+---
+
+# Exercício TDD — PersonDAO.isValidToInclude()
+
+Implementação em **Java 21 + JUnit 5** do Exercício 2 de TDD.  
+O método `isValidToInclude(Person p)` retorna uma `List<String>` de erros com base nas regras de negócio abaixo.
+
+---
+
+## Build & Testes
+
+```bash
+# Clone o repositório
+git clone <URL_DO_REPOSITORIO>
+cd Ex2-Classes
+
+# Compilar, rodar testes e gerar relatório JaCoCo
+mvn test
+```
+
+---
+
+## Evidências de Cobertura (JaCoCo)
+
+```
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running dao.PersonDAOTest
+
+PersonDAO — isValidToInclude()
+  0 - Person completamente valida
+    ✓ Nenhum erro para uma Person valida
+
+  Regra 1 | Validacao do Nome
+    ✓ 1a- nome com 2 partes validas nao gera erro
+    ✓ 1b- nome com 3 partes validas nao gera erro
+    ✓ 1c- nome com apenas 1 parte gera erro
+    ✓ 1d- nome vazio gera erro
+    ✓ 1e- nome nulo gera erro
+    ✓ 1f- nome com numero gera erro
+    ✓ 1g- nome com simbolo gera erro
+    ✓ 1h- nome so com espacos gera erro
+
+  Regra 2 | Validacao da Idade [1, 200]
+    ✓ 2a- idade 1 (limite inferior) nao gera erro
+    ✓ 2b- idade 200 (limite superior) nao gera erro
+    ✓ 2c- idade 100 (meio do intervalo) nao gera erro
+    ✓ 2d- idade 0 (abaixo do limite) gera erro
+    ✓ 2e- idade -1 (negativa) gera erro
+    ✓ 2f- idade 201 (acima do limite) gera erro
+
+  Regra 3 | Person deve ter ao menos 1 Email
+    ✓ 3a- lista de emails vazia gera erro
+    ✓ 3b- lista de emails nula gera erro
+    ✓ 3c- person com 2 emails validos nao gera erro
+
+  Regra 4 | Formato do Email: local@dominio.tld
+    ✓ 4a- formato valido simples nao gera erro
+    ✓ 4b- formato valido com 1 char em cada parte nao gera erro
+    ✓ 4c- sem @ gera erro
+    ✓ 4d- sem ponto gera erro
+    ✓ 4e- parte local vazia gera erro
+    ✓ 4f- dominio vazio gera erro
+    ✓ 4g- TLD vazio gera erro
+    ✓ 4h- nome de email vazio gera erro
+    ✓ 4i- email nulo gera erro
+
+  5 | Multiplos erros simultaneos
+    ✓ 5a- nome invalido + idade invalida retornam 2 erros
+    ✓ 5b- person sem nenhuma informacao valida retorna multiplos erros
+
+Tests run: 29, Failures: 0, Errors: 0, Skipped- 0
+
+[INFO] BUILD SUCCESS
+```
+
+### Cobertura JaCoCo — `PersonDAO.java`
+
+| Elemento              | Instruções | Branches | Linhas |
+|-----------------------|-----------|----------|--------|
+| `isValidToInclude()`  | 100%      | 100%     | 100%   |
+| `validateName()`      | 100%      | 100%     | 100%   |
+| `validateAge()`       | 100%      | 100%     | 100%   |
+| `validateEmail()`     | 100%      | 100%     | 100%   |
+
+---
+
+## Regras de Validação
+
+| Regra | Campo  | Condição                                                                 | Erro gerado quando...                          |
+|-------|--------|--------------------------------------------------------------------------|------------------------------------------------|
+| 1     | nome   | ao menos 2 partes separadas por espaço, cada parte só com letras         | 1 parte, vazio, nulo ou contém dígito/símbolo  |
+| 2     | age    | inteiro no intervalo fechado [1, 200]                                    | age ≤ 0 ou age ≥ 201                           |
+| 3     | emails | lista não nula e com ao menos 1 item                                     | lista vazia ou nula                            |
+| 4     | email  | formato `local@dominio.tld` com ≥ 1 caractere em cada parte             | qualquer parte ausente ou string vazia/nula    |
+
+### Regex utilizada para e-mail
+
+```java
+email.matches("[^@.]+@[^@.]+\\.[^@.]+")
+```
+
+Garante que:
+- Parte local (`[^@.]+`): ao menos 1 caractere, sem `@` nem `.`
+- `@` literal
+- Domínio (`[^@.]+`): ao menos 1 caractere
+- `.` literal
+- TLD (`[^@.]+`): ao menos 1 caractere
